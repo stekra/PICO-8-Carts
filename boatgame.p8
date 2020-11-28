@@ -6,7 +6,7 @@ __lua__
 
 -- todo:
 --  😐 two players
---  … detect gate pass
+----… detect gate pass
 --  ⧗ time/score
 --  ✽ wind behavior
        -- change at wind-sock
@@ -24,7 +24,7 @@ function _init()
 	b.vx=0
 	b.vy=0
 	b.ang=0.25
-	b.spd=0.0015
+	b.spd=0.002
 	b.goals=0
 	
 	s={} -- sail
@@ -63,11 +63,11 @@ function _update60()
  vel+=b.spd*wf
  vel*=0.995
  
- b.x-=cos(b.ang)*vel
- b.y+=sin(b.ang)*vel
+ b.x-=cos(b.ang)*vel/2
+ b.y+=sin(b.ang)*vel/2
  
  -- turn ctrl
- t=0.006
+ t=0.005
  spd=sqrt(b.vx*b.vx+b.vy*b.vy)
  spd=(spd*2.5+0.2)
  if (btn(⬅️)) b.ang-=t*spd
@@ -81,12 +81,8 @@ function _update60()
 	end
 	 
  -- sail root position
- local offset=8
--- s.x=b.x-cos(b.ang)*offset
--- s.x-=0.5
--- s.y=b.y+sin(b.ang)*offset
- s.x=b.x+7.5
- s.y=b.y+7.5
+ s.x=b.x-cos(b.ang)*2+7.5
+ s.y=b.y+sin(b.ang)*2+7.5
 
  -- turn wind
  wang=(wang+0.0001)%1
@@ -103,6 +99,7 @@ function _update60()
 end
 
 function _draw()
+	local start = stat(1)
 	cls(3)
 	print(st,0,50,0)
 	print(fps,0,60,0)
@@ -115,17 +112,13 @@ function _draw()
  draw_array(gates)
  
  draw_boat(b.x,b.y+v,b.ang)
-	local start = stat(1)
--- draw_sail(s.x,s.y+v,s.ang)
  draw_sail(s.x,s.y+v,s.ang) 
-	printh("this took "..((stat(1)-start)*100).."% of a frame")
  
 -- draw_sock(108,16)
  rspr(64,16,108,8,wang,2)
  print(wang,105,26,12)
  
- circfill(b.x+8,b.y+8+v,1,9)
- 
+	printh("this took "..((stat(1)-start)*100).."% of a frame")
 end
 
 -->8
@@ -196,22 +189,14 @@ function draw_boat(x,y,a)
  end
 end
 
-function draw_sail_old(x,y,a)
- for i=2,11 do
-  local sx=16*(i%8)
-  local sy=16*flr(i/8)
-  rspr(sx,sy,x,y-i,a,2)
- end
-end
-
 function draw_sail(x,y,a)
  local ax=cos(a)
  local ay=sin(a)
- local p1={x,y-1}
- local p2={x,y-10}
- local p3={x+ax*8,y-1-ay*8}
+ local p1={x,y-2}
+ local p2={x,y-11}
+ local p3={x+ax*8,y-2-ay*8}
  tri(p1,p2,p3,7)
- line(x,y,x,y-10,5)
+ line(x,y-1,x,y-11,5)
 end
 
 function draw_sail_refl(x,y,a)
@@ -220,15 +205,12 @@ function draw_sail_refl(x,y,a)
  local ax=cos(a)
  local ay=sin(a)
  local p1={x,y+2}
- local p2={x,y+10}
+ local p2={x,y+11}
  local p3={x+ax*8,y+2-ay*8}
  tri(p1,p2,p3,7)
- line(x,y,x,y+10,5)
+ line(x,y,x,y+11,5)
  pal()
  pal(10,138,1)
--- for i=2,30,2 do
---  line(x,y+i,x+16,y+i,3)
--- end
 end
 
 function draw_start(y)

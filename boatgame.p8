@@ -124,6 +124,8 @@ function _init()
 --	setup_map_refl()
 		
  printh("\n\n-----run------\n")
+ 
+ sok=new_sock(108,16)
 end
 
 function _update60()
@@ -169,7 +171,7 @@ function _update60()
  s.y=b.y+8
 
  -- turn wind
--- wang=(wang+0.0001)%1
+ wang=(wang+0.001)%1
 
  -- collision
  local cx=flr((b.x+8)/8)
@@ -182,6 +184,8 @@ function _update60()
  
  st=stat(1)
  fps=stat(7)
+ 
+ sok.update(sok)
 end
 
 function _draw()
@@ -215,9 +219,10 @@ function _draw()
  
 	camera()
 --	local start=stat(1)
- draw_sock(108,16)
+-- draw_sock(108,16)
+ sok.draw(sok)
 --	printh("this took "..((stat(1)-start)*100).."% of a frame")
--- rspr(64,16,108,8,wang,2)
+ rspr(64,16,108,32,wang,2)
  print(wang,105,26,12)
  
 --	draw_debug()
@@ -337,12 +342,59 @@ function draw_start(y)
 	end
 end
 
-function draw_sock(x,y)
- for i=0,13 do
-  local sx=16*(i%8)
-  local sy=16*flr(i/8)
-  rspr(0+sx,32+sy,x,y-i,wang,2)
+function new_sock(x,y)
+ local s={}
+ s.r=3
+ s.x=x
+ s.y=y
+ s.p1={s.x-s.r,s.y-s.r}
+ s.p2={s.x+s.r,s.y+s.r}
+ s.off=1
+ s.len=3
+ s.update=function(this)
+  s.p1[1]=s.x-sin(wang)*s.r
+  s.p1[2]=s.y-s.r
+--  s.p1[2]=s.y-cos(wang)*s.r
+  s.p2[1]=s.x+sin(wang)*s.r
+  s.p2[2]=s.y+s.r
+--  s.p2[2]=s.y+cos(wang)*s.r
  end
+ s.draw=function(this)
+  if wang>0.5 then
+	  for i=this.len,0,-1 do
+	   if i%2==0 then color(9)
+	   else color(7) end
+		  ovalfill(
+		   this.p1[1]+cos(wang)*s.off*i,
+	    this.p1[2]-sin(wang)*s.off*i,
+	    this.p2[1]+cos(wang)*s.off*i,
+	    this.p2[2]-sin(wang)*s.off*i
+	   )
+		 end
+		else
+		 for i=1,this.len do
+	   if i%2==0 then color(9)
+	   else color(7) end
+		  ovalfill(
+		   this.p1[1]+cos(wang)*s.off*i,
+	    this.p1[2]-sin(wang)*s.off*i,
+	    this.p2[1]+cos(wang)*s.off*i,
+	    this.p2[2]-sin(wang)*s.off*i
+	   )
+		 end
+		end
+ end
+ return s
+end
+
+function draw_sock(x,y)
+-- for i=0,13 do
+--  local sx=16*(i%8)
+--  local sy=16*flr(i/8)
+--  rspr(0+sx,32+sy,x,y-i,wang,2)
+-- end
+ local cw=cos(wang)
+ ovalfill()
 end
 
 function new_gate(y)

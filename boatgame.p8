@@ -46,7 +46,7 @@ function _init()
 	
 	sox={}
 	
-	twang=rnd() -- target wang
+	twang=flr(rnd(2))/2 -- target wang
 	wang=twang  -- wind angle
 	wrot=false  -- wind rotating
 	wstep=0     -- wind flash step
@@ -71,7 +71,8 @@ function _init()
 	
 	os2d_noise(rnd(128))
 	
-	local sr=5 -- safe radius
+	local sw=5 -- safe width
+	local sh=5 -- safe height
  
 	for y=0,62 do
 	 for x=0,62 do
@@ -82,8 +83,8 @@ function _init()
 	   grid[x][y]=1
 	   grid[x+1][y]=1
 	  end
-	  if  32-sr<x and x<32+sr
-	  and 32-sr<y and y<32+sr then
+	  if  32-sw<x and x<32+sw
+	  and 32-sh<y and y<32+sh then
 	   grid[x][y]=0
 	  end
 	 end
@@ -166,7 +167,7 @@ function _update60()
  -- turn wind
  twang=twang%1
  wang=wang%1
- if time()%25==0 then
+ if time()%35==0 then
   twang=rnd()
  end
  if twang~=wang then
@@ -236,8 +237,6 @@ function _draw()
  
 	camera()
 	print(g.count,0,0,7)
-	print(wang,0,10,7)
-	print(twang,0,20,7)
 --	local start=stat(1)
 -- draw_sock(108,16)
  sok.draw(sok)
@@ -356,7 +355,10 @@ function init_gull()
 	g.mh=g.h -- median h
 	g.r=20 -- fly radius
 	g.s=35 -- fly speed
-	g.l=0.4 -- target speed
+	g.l=0    -- target speed
+	g.ml=0.4 -- target max speed
+	g.a=0.0005 -- target accel
+	g.bfollow=true -- following boat
 	g.attarget=false
 	g.br=40   -- boat range
 	g.bfr=150 -- boat far range
@@ -385,6 +387,7 @@ function init_gull()
 	 if (g.sfr>2) g.sfr=1
 	 
 	 -- fly
+	 g.l=min(g.l+g.a,g.ml)
 	 if (g.ttx<g.tx) g.ttx+=g.l
 	 if (g.ttx>g.tx) g.ttx-=g.l
 	 if (g.tty<g.ty) g.tty+=g.l
@@ -407,15 +410,17 @@ function init_gull()
 	 if  abs(g.tx-g.tttx)<=40
 	 and abs(g.ty-g.ttty)<=40 then
 	  g.attarget=true
+	  g.l=max(g.l-2*g.a,0)
 	 else
 	  g.attarget=false
 	 end
 	 
-		if time()>10 then
-		 if g.boat_in_range(g.br) then
-		  g.settarget()
-		 end
-		else
+		if g.bfollow 
+		and time()>10 then
+		 g.bfollow=false
+		 g.settarget()
+		end
+		if g.bfollow then
 		 g.tttx=b.x+8
 		 g.ttty=b.y+8
 		 g.attarget=false
@@ -437,7 +442,7 @@ function init_gull()
 	   g.sitting=false
 	   g.sit_timer=g.sit_max
   end
-  
+
   if g.boat_in_range(g.br)
   and g.attarget then
 		 g.sit_timer=min(g.sit_timer+2/60,g.sit_max)
@@ -445,6 +450,7 @@ function init_gull()
 		 lr*=t*2-1
 		 if t>=0.5 then
 		  g.sitting=false
+		  g.l=0
 		 end
 		 if g.sit_timer>=g.sit_max then
 		  g.settarget()
@@ -621,13 +627,13 @@ function draw_intro()
 	 print("GO WITH THE WIND",x,y+32)
 	 print("AND WATER",x,y+38)
 	 print("AND FLY",x,y+44)
+--	 x=210
+--	 y=218
+--	 print("SAILBOAT BELOW",x,y+36)
+--	 print("WITH STORM-WEATHERED TIES",x,y+42)
+--	 print("GET OUT OF YOUR DEPTHS",x,y+48)
+--	 print("AND TAKE TO THE SKIES",x,y+54)
 	end
--- x=210
--- y=172
--- print("SAILBOAT BELOW",x,y+36)
--- print("WITH STORM-WEATHERED TIES",x,y+42)
--- print("GET OUT OF YOUR DEPTHS",x,y+48)
--- print("AND TAKE TO THE SKIES",x,y+54)
  
 -- FLY THROUGH WATER
 -- SWIM THROUGH AIR

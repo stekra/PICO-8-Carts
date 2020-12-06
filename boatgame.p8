@@ -12,8 +12,8 @@ __lua__
 ---- terrain collisions
 ---- follow seagull
 ---- seagull waits on rocks
-----player spawns somewhere
--- wind changes
+---- player spawns somewhere
+---- wind changes
 -- exit spawns somewhere
 -- water wave effects
 -- sfx (speed,gate,..)
@@ -26,7 +26,7 @@ function _init()
 	b.vx=0
 	b.vy=0
 	b.ang=0.375
-	b.spd=0.002
+	b.spd=0.0015
 	b.goals=0
 	b.c=false -- alt color
 	b.cs=0 -- color step
@@ -46,7 +46,11 @@ function _init()
 	
 	sox={}
 	
-	wang=0.5 -- wind angle
+	twang=rnd() -- target wang
+	wang=twang  -- wind angle
+	wrot=false  -- wind rotating
+	wstep=0     -- wind flash step
+	wcol=false  -- wind flash col
 	
 	vel=0
 	
@@ -160,8 +164,22 @@ function _update60()
  s.y=b.y+8
 
  -- turn wind
--- wang=(wang+0.0005)%1
-
+ twang=twang%1
+ wang=wang%1
+ if time()%25==0 then
+  twang=rnd()
+ end
+ if twang~=wang then
+  wang=arot(wang,twang,0.005)
+  wrot=true
+  wstep+=1
+  if (wstep%3==0) wcol=not wcol
+ else
+  wrot=false
+  wcol=false
+  wstep=0
+ end
+ 
  -- collision 
  b.col=max(b.col-1/60,0)
  
@@ -218,6 +236,8 @@ function _draw()
  
 	camera()
 	print(g.count,0,0,7)
+	print(wang,0,10,7)
+	print(twang,0,20,7)
 --	local start=stat(1)
 -- draw_sock(108,16)
  sok.draw(sok)
@@ -391,7 +411,7 @@ function init_gull()
 	  g.attarget=false
 	 end
 	 
-		if time()>20 then
+		if time()>10 then
 		 if g.boat_in_range(g.br) then
 		  g.settarget()
 		 end
@@ -505,7 +525,11 @@ function new_sock(x,y)
  s.draw=function(this)
   if s.a>0.5 then
 	  for i=this.len,1,-1 do
-	   color(s.col[i])
+	   if wcol then
+	    color(8)
+	   else
+	    color(s.col[i])
+	   end
 	   local r=s.r
 	   if (i>5) r=s.r-1
 		  ovalfill(
@@ -519,7 +543,11 @@ function new_sock(x,y)
 		else
 		 line(s.x,s.y-1,s.x,s.y+8,5)
 		 for i=1,this.len do
-	   color(s.col[i])
+	   if wcol then
+	    color(8)
+	   else
+	    color(s.col[i])
+	   end
 	   local r=s.r
 	   if (i>5) r=s.r-1
 		  ovalfill(
@@ -581,17 +609,19 @@ function draw_array(array)
 end
 
 function draw_intro()
- color(11)
- local x,y
- x=225
- y=225
- print("⬅️ AND ➡️: STEER",x,y)
- print("❎ OR 🅾️: PULL IN",x,y+12)
- print("          THE SAIL",x,y+18)
--- print("TO PULL IN SAIL",x,y+18)
- print("GO WITH THE WIND",x,y+32)
- print("AND WATER",x,y+38)
- print("AND FLY",x,y+44)
+ if time()<30 then
+	 color(11)
+	 local x,y
+	 x=225
+	 y=225
+	 print("⬅️ AND ➡️: STEER",x,y)
+	 print("❎ OR 🅾️: PULL IN",x,y+12)
+	 print("          THE SAIL",x,y+18)
+	-- print("TO PULL IN SAIL",x,y+18)
+	 print("GO WITH THE WIND",x,y+32)
+	 print("AND WATER",x,y+38)
+	 print("AND FLY",x,y+44)
+	end
 -- x=210
 -- y=172
 -- print("SAILBOAT BELOW",x,y+36)

@@ -39,175 +39,17 @@ function _init()
 	b.ang=0.25
 	b.spd=0.002
 	b.goals=0
+	b.c=false -- alt color
+	b.cs=0 -- color step
+	b.col=0 -- collided
+	b.col_max=2
 	
 	s={} -- sail
 	s.x=b.x
 	s.y=b.y
 	s.ang=.35
 	
-	g={} -- gull
-	g.tx=b.x+8
-	g.ty=b.y+8
-	g.ttx=g.tx
-	g.tty=g.ty
-	g.tttx=g.tx
-	g.ttty=g.ty
-	g.h=15 -- fly height
-	g.mh=g.h -- median h
-	g.r=20 -- fly radius
-	g.s=35 -- fly speed
-	g.l=0.4 -- target speed
-	g.attarget=false
-	g.br=40   -- boat range
-	g.bfr=150 -- boat far range
-	g.sitting=false
-	g.sit_max=3
-	g.sit_timer=g.sit_max
-	g.spr={32,33,34,35}
-	g.step=0 -- anim step
-	g.fr=1   -- anim frame
-	g.ft={2,1,1,1} -- rel fr time
-	g.sspr={48,49} -- sitting spr
-	g.sfr=1 -- sitting frame
-	g.sft={16,6} -- sitting ft
-	g.init=function()
-	 g.settarget()
-	end
-	g.update=function()
-	 -- anim
-	 g.step+=1
-	 local m=g.step%(10*g.ft[g.fr])
-	 if (m==0) g.fr+=1
-	 if (g.fr>4) g.fr=1
-	 local n=g.step%(10*g.sft[g.sfr])
-	 if (n==0) g.sfr+=1
-	 if (g.sfr>2) g.sfr=1
-	 
-	 -- fly
-	 if (g.ttx<g.tx) g.ttx+=g.l
-	 if (g.ttx>g.tx) g.ttx-=g.l
-	 if (g.tty<g.ty) g.tty+=g.l
-	 if (g.tty>g.ty) g.tty-=g.l
-	 
-	 if not g.boat_in_range(g.bfr) then
-		 local w=30
-		 g.ttx=mid(b.x+8-w,g.ttx,b.x+8+w)
-		 g.tty=mid(b.y+8-w,g.tty,b.y+8+w)
-		 g.sitting=false
-		end
-		
-		if not g.sitting then
-			if (g.tttx<g.ttx) g.tttx+=g.l
-		 if (g.tttx>g.ttx) g.tttx-=g.l
-		 if (g.ttty<g.tty) g.ttty+=g.l
-		 if (g.ttty>g.tty) g.ttty-=g.l
-	 end
-	 
-	 if  abs(g.tx-g.tttx)<=40
-	 and abs(g.ty-g.ttty)<=40 then
-	  g.attarget=true
-	 else
-	  g.attarget=false
-	 end
-	 
-		if time()>20 then
-		 if g.boat_in_range(g.br) then
-		  g.settarget()
-		 end
-		else
-		 g.tttx=b.x+8
-		 g.ttty=b.y+8
-		 g.attarget=false
-		end
-	 
-	 -- sit
-	 local lr=g.r
-	 
-		if g.attarget
-		and g.boat_in_range(g.bfr) then
-		 g.sit_timer=max(g.sit_timer-1/60,0)
-		 local t=g.sit_timer/g.sit_max
-		 lr*=t
-		 if g.sit_timer<=0 then
-		  g.sitting=true
-		  g.sh=g.h
-		 end
-  else
-	   g.sitting=false
-	   g.sit_timer=g.sit_max
-  end
-  
-  if g.boat_in_range(g.br)
-  and g.attarget then
-		 g.sit_timer=min(g.sit_timer+2/60,g.sit_max)
-		 local t=g.sit_timer/g.sit_max
-		 lr*=t*2-1
-		 if t>=0.5 then
-		  g.sitting=false
-		 end
-		 if g.sit_timer>=g.sit_max then
-		  g.settarget()
-		 end
-  end
-  printh(g.sit_timer)
-  
-  if not g.sitting then
-	  g.h=g.mh+sin(time()/6)*5
-   -- lissajous
-		 local lx=sin(time()*4/g.s)
-		 local ly=cos(time()*5/g.s)
-		 g.x=g.tttx+lx*lr
-		 g.y=g.ttty+ly*lr
-		else
-		 g.x=g.tttx
-		 g.y=g.ttty
-		end
-		
-  if (btn(❎)) g.settarget()
-	end
-	g.boat_in_range=function(r)
-	 if  b.x+8>g.tx-r
-	 and b.x+8<g.tx+r then
-	  if  b.y+8>g.ty-r
-	  and b.y+8<g.ty+r then
-	   return true
-	  end
-	 end
-	 return false
-	end
-	g.settarget=function()
-	 while true do
-		 cx=flr(rnd(62)+1)
-		 cy=flr(rnd(63)+1)
-		 local c=grid[cx][cy]
-	  if c==1 then
-	   g.tx=cx*8+4
-	   g.ty=cy*8+4
-	   return
-	  end
-	 end
-	end
-	g.draw=function()
---	 spr(8,g.tx-4,g.ty-4)
---	 spr(9,g.ttx-5,g.tty-5)
---	 circ(g.tx,g.ty,g.br,6)
---	 circ(g.tx,g.ty,g.bfr,6)
---	 local w=40
---	 rect(b.x+8-w,b.y+8-w,b.x+8+w,b.y+8+w)
-	 
-  if not g.sitting then
-	  spr(g.spr[g.fr],g.x,g.y-g.h)
-	 else
-	  spr(g.sspr[g.sfr],g.x,g.y-g.h)
-	 end
-	end
-	g.draw_refl=function()
-	 if not g.sitting then
-	  pal(7,10)
-	  spr(g.spr[g.fr],g.x,g.y+g.h,1,1,false,true)
-	  pal()
-	 end
-	end
+	g=init_gull()
 	
 	cam={}
 	cam.x=0
@@ -273,25 +115,44 @@ function _update60()
  falloff=0.99
  b.vx*=falloff
  b.vy*=falloff
+ if b.col>0 then
+  b.vx=cos(b.ang)/8
+  b.vy=-sin(b.ang)/8
+ end
  
  b.x+=b.vx
  b.y+=b.vy
-
+ 
  vel+=b.spd*wf
  vel*=0.995
- 
+	if b.col>0 then
+	 vel=0
+	end
+	
  b.x-=cos(b.ang)*vel/2
  b.y+=sin(b.ang)*vel/2
+ 
+ -- flash on collisionn
+ if b.col>0 then
+  b.cs+=1
+  if b.cs%3==0 then
+   b.c=not b.c
+  end
+ end
  
  -- turn ctrl
  local t=0.005
  spd=sqrt(b.vx*b.vx+b.vy*b.vy)
  spd=(spd*2.5+0.2)
- if (btn(⬅️)) b.ang-=t*spd
- if (btn(➡️)) b.ang+=t*spd
+ 
+ if b.col==0 then
+	 if (btn(⬅️)) b.ang-=t*spd
+	 if (btn(➡️)) b.ang+=t*spd
+	end
  
  -- sail ctrl
- if (btn(🅾️) or btn(❎)) then
+ if (btn(🅾️) or btn(❎))
+ and b.col==0 then
   s.ang=arot(s.ang,b.ang,0.0027)
  else
   s.ang=arot(s.ang,wang,0.003)
@@ -306,13 +167,19 @@ function _update60()
  -- turn wind
 -- wang=(wang+0.0005)%1
 
- -- collision
+ -- collision 
+ b.col=max(b.col-1/60,0)
+ 
  local cx=flr((b.x+8)/8)
  local cy=flr((b.y+8)/8)
- if cx<1 or cy<1
+ if cx<1  or cy<1
+ or cx>63 or cy>63
  or grid[cx][cy]==1 then
-  printh("collided "..cx.." "..cy)
+--  printh("collided "..cx.." "..cy)
+  b.col=b.col_max
  end
+ 
+ printh(b.col)
  
  g.update()
  
@@ -449,6 +316,9 @@ end
 -- object functions ★
 
 function draw_boat(x,y,a)
+ if b.col>0 and b.c then
+  pal(5,13)
+ end
  for i=0,1 do
   local sx=16*(i%8)
   local sy=16*flr(i/8)
@@ -478,6 +348,172 @@ function draw_sail_refl(x,y,a)
  line(x,y,x,y+11,5)
  pal()
  pal(10,138,1)
+end
+
+function init_gull()
+ g={}
+	g.tx=b.x+8
+	g.ty=b.y+8
+	g.ttx=g.tx
+	g.tty=g.ty
+	g.tttx=g.tx
+	g.ttty=g.ty
+	g.h=15 -- fly height
+	g.mh=g.h -- median h
+	g.r=20 -- fly radius
+	g.s=35 -- fly speed
+	g.l=0.4 -- target speed
+	g.attarget=false
+	g.br=40   -- boat range
+	g.bfr=150 -- boat far range
+	g.sitting=false
+	g.sit_max=3
+	g.sit_timer=g.sit_max
+	g.spr={32,33,34,35}
+	g.step=0 -- anim step
+	g.fr=1   -- anim frame
+	g.ft={2,1,1,1} -- rel fr time
+	g.sspr={48,49} -- sitting spr
+	g.sfr=1 -- sitting frame
+	g.sft={16,6} -- sitting ft
+	g.init=function()
+	 g.settarget()
+	end
+	g.update=function()
+	 -- anim
+	 g.step+=1
+	 local m=g.step%(10*g.ft[g.fr])
+	 if (m==0) g.fr+=1
+	 if (g.fr>4) g.fr=1
+	 local n=g.step%(10*g.sft[g.sfr])
+	 if (n==0) g.sfr+=1
+	 if (g.sfr>2) g.sfr=1
+	 
+	 -- fly
+	 if (g.ttx<g.tx) g.ttx+=g.l
+	 if (g.ttx>g.tx) g.ttx-=g.l
+	 if (g.tty<g.ty) g.tty+=g.l
+	 if (g.tty>g.ty) g.tty-=g.l
+	 
+	 if not g.boat_in_range(g.bfr) then
+		 local w=30
+		 g.ttx=mid(b.x+8-w,g.ttx,b.x+8+w)
+		 g.tty=mid(b.y+8-w,g.tty,b.y+8+w)
+		 g.sitting=false
+		end
+		
+		if not g.sitting then
+			if (g.tttx<g.ttx) g.tttx+=g.l
+		 if (g.tttx>g.ttx) g.tttx-=g.l
+		 if (g.ttty<g.tty) g.ttty+=g.l
+		 if (g.ttty>g.tty) g.ttty-=g.l
+	 end
+	 
+	 if  abs(g.tx-g.tttx)<=40
+	 and abs(g.ty-g.ttty)<=40 then
+	  g.attarget=true
+	 else
+	  g.attarget=false
+	 end
+	 
+		if time()>20 then
+		 if g.boat_in_range(g.br) then
+		  g.settarget()
+		 end
+		else
+		 g.tttx=b.x+8
+		 g.ttty=b.y+8
+		 g.attarget=false
+		end
+	 
+	 -- sit
+	 local lr=g.r
+	 
+		if g.attarget
+		and g.boat_in_range(g.bfr) then
+		 g.sit_timer=max(g.sit_timer-1/60,0)
+		 local t=g.sit_timer/g.sit_max
+		 lr*=t
+		 if g.sit_timer<=0 then
+		  g.sitting=true
+		  g.sh=g.h
+		 end
+  else
+	   g.sitting=false
+	   g.sit_timer=g.sit_max
+  end
+  
+  if g.boat_in_range(g.br)
+  and g.attarget then
+		 g.sit_timer=min(g.sit_timer+2/60,g.sit_max)
+		 local t=g.sit_timer/g.sit_max
+		 lr*=t*2-1
+		 if t>=0.5 then
+		  g.sitting=false
+		 end
+		 if g.sit_timer>=g.sit_max then
+		  g.settarget()
+		 end
+  end
+  
+  if not g.sitting then
+	  g.h=g.mh+sin(time()/6)*5
+   -- lissajous
+		 local lx=sin(time()*4/g.s)
+		 local ly=cos(time()*5/g.s)
+		 g.x=g.tttx+lx*lr
+		 g.y=g.ttty+ly*lr
+		else
+		 g.x=g.tttx
+		 g.y=g.ttty
+		end
+		
+  if (btn(❎)) g.settarget()
+	end
+	g.boat_in_range=function(r)
+	 if  b.x+8>g.tx-r
+	 and b.x+8<g.tx+r then
+	  if  b.y+8>g.ty-r
+	  and b.y+8<g.ty+r then
+	   return true
+	  end
+	 end
+	 return false
+	end
+	g.settarget=function()
+	 while true do
+		 cx=flr(rnd(62)+1)
+		 cy=flr(rnd(63)+1)
+		 local c=grid[cx][cy]
+	  if c==1 then
+	   g.tx=cx*8+4
+	   g.ty=cy*8+4
+	   return
+	  end
+	 end
+	end
+	g.draw=function()
+--	 spr(8,g.tx-4,g.ty-4)
+--	 spr(9,g.ttx-5,g.tty-5)
+--	 circ(g.tx,g.ty,g.br,6)
+--	 circ(g.tx,g.ty,g.bfr,6)
+--	 local w=40
+--	 rect(b.x+8-w,b.y+8-w,b.x+8+w,b.y+8+w)
+	 
+  if not g.sitting then
+	  spr(g.spr[g.fr],g.x,g.y-g.h)
+	 else
+	  spr(g.sspr[g.sfr],g.x,g.y-g.h)
+	 end
+	end
+	g.draw_refl=function()
+	 if not g.sitting then
+	  pal(7,10)
+	  spr(g.spr[g.fr],g.x,g.y+g.h,1,1,false,true)
+	  pal()
+	 end
+	end
+	return g
 end
 
 function new_sock(x,y)
@@ -523,6 +559,7 @@ function new_sock(x,y)
  end
  return s
 end
+
 
 -->8
 -- helper functions ♥

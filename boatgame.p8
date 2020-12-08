@@ -5,19 +5,18 @@ __lua__
 -- by @sutekura
 
 -- todo:
----- generate different rocks
----- generate map with rocks
----- boundary is rough waters
----- rock mget() collisions
----- terrain collisions
----- follow seagull
----- seagull waits on rocks
----- player spawns somewhere
----- wind changes
--- ending
--- water wave effects
--- sfx (speed,gate,..)
--- music and/or ambience
+---◆ generate different rocks
+---░ generate map with rocks
+---▒ boundary is rough waters
+---★ terrain collisions
+---ˇ follow seagull
+---⧗ seagull waits on rocks
+---😐 player spawns somewhere
+---✽ wind changes
+---⌂ ending
+-- ∧ water wave effects
+-- ❎ sfx (speed,gate,..)
+-- ♪ music and/or ambience
 
 function _init()
 	b={} -- boat
